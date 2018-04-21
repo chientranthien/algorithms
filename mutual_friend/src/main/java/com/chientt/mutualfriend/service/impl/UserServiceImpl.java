@@ -39,14 +39,14 @@ public class UserServiceImpl implements UserService {
         }
         long lowerVal = upperBoundArray.get(0);
 
-        int lowerIndex = Collections.binarySearch(lowerBoundArray, lowerVal);
+        int lowerIndex = Math.abs(Collections.binarySearch(lowerBoundArray, lowerVal));
         List<Long> result = new ArrayList<>();
 
         for (int i = lowerIndex, j = 0; i < lowerBoundArray.size(); i++) {
             long val = lowerBoundArray.get(i);
 
-            while (j < upperBoundArray.size() && upperBoundArray.get(i) <= val) {
-                if (upperBoundArray.get(i) == val) {
+            while (j < upperBoundArray.size() && upperBoundArray.get(j) <= val) {
+                if (upperBoundArray.get(j) == val) {
                     result.add(val);
                 }
                 j++;
