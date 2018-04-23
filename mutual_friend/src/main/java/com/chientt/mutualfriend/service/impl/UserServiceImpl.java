@@ -24,29 +24,29 @@ public class UserServiceImpl implements UserService {
         if (isNullOrEmpty(friendList1) || isNullOrEmpty(friendList2)) {
             return Collections.EMPTY_LIST;
         }
-        List<Long> lowerBoundArray;
-        List<Long> upperBoundArray;
+        List<Long> lowerArray;
+        List<Long> upperArray;
         if (friendList1.get(0) < friendList2.get(0)) {
-            lowerBoundArray = friendList1;
-            upperBoundArray = friendList2;
+            lowerArray = friendList1;
+            upperArray = friendList2;
         } else {
-            lowerBoundArray = friendList2;
-            upperBoundArray = friendList1;
+            lowerArray = friendList2;
+            upperArray = friendList1;
         }
 
-        if (!isEntersectional(lowerBoundArray, upperBoundArray)) {
+        if (!isEntersectional(lowerArray, upperArray)) {
             return Collections.EMPTY_LIST;
         }
-        long lowerVal = upperBoundArray.get(0);
+        long lowerVal = upperArray.get(0);
 
-        int lowerIndex = Math.abs(Collections.binarySearch(lowerBoundArray, lowerVal));
+        int lowerIndex = Math.abs(Collections.binarySearch(lowerArray, lowerVal));
         List<Long> result = new ArrayList<>();
 
-        for (int i = lowerIndex, j = 0; i < lowerBoundArray.size(); i++) {
-            long val = lowerBoundArray.get(i);
+        for (int i = lowerIndex, j = 0; i < lowerArray.size(); i++) {
+            long val = lowerArray.get(i);
 
-            while (j < upperBoundArray.size() && upperBoundArray.get(j) <= val) {
-                if (upperBoundArray.get(j) == val) {
+            while (j < upperArray.size() && upperArray.get(j) <= val) {
+                if (upperArray.get(j) == val) {
                     result.add(val);
                 }
                 j++;
