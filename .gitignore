@@ -22,3 +22,5 @@
 hs_err_pid*
 /mutual_friend/target/
 /base64/target/
+
+base64/src/test/java/com/chientt/base64/MyTest.java
