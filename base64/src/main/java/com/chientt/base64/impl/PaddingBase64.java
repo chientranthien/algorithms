@@ -23,7 +23,7 @@ public class PaddingBase64 implements Encoder {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/', '='
     };
 
-    //len =128 because the largest 
+    //len =128 because 128 can cover all base64 character in ASCII 
     private static final byte[] REVERSE_BASE_64_TABLE = new byte[128];
 
     static {
@@ -88,38 +88,56 @@ public class PaddingBase64 implements Encoder {
         }
         char[] encodedBytes = str.toCharArray();
         int len = encodedBytes.length;
-        int paddingLen = 0;
-        if (encodedBytes[len - 2] == PADDING_CHAR) {
-            paddingLen = 2;
-        } else if (encodedBytes[len - 1] == PADDING_CHAR) {
-            paddingLen = 1;
-        }
+        int paddingLen =getPaddingLen(encodedBytes);
+        
         int decodedLen = (len * 3 / 4) - paddingLen;
         byte[] decodedBytes = new byte[decodedLen];
-        int j = 0;
-        for (int i = 0; i < len;) {
-            char c1 = encodedBytes[i++];
-            char c2 = encodedBytes[i++];
-            char c3 = encodedBytes[i++];
-            char c4 = encodedBytes[i++];
-            byte b1 = REVERSE_BASE_64_TABLE[c1];
-            byte b2 = REVERSE_BASE_64_TABLE[c2];
-            byte b3 = REVERSE_BASE_64_TABLE[c3];
-            byte b4 = REVERSE_BASE_64_TABLE[c4];
+        for (int i = 0, j = 0; i < len;) {
+            byte encodedByte1 = lookupEncodedByte(encodedBytes, i++);
+            byte encodedByte2 = lookupEncodedByte(encodedBytes, i++);
+            byte encodedByte3 = lookupEncodedByte(encodedBytes, i++);
+            byte encodedByte4 = lookupEncodedByte(encodedBytes, i++);
 
-            byte decoded1 = (byte) ((b1 << 2) | (b2 >> 4));
-            byte decoded2 = (byte) ((b2 << 4) | (b3 >> 2));
-            byte decoded3 = (byte) ((b3 << 6) | b4);
-            decodedBytes[j++] = decoded1;
-            if ((decodedBytes.length - j) - paddingLen >= 0) {
-                decodedBytes[j++] = decoded2;
+            byte decodedByte1 = get1stDecodedByte(encodedByte1, encodedByte2);
+            decodedBytes[j++] = decodedByte1;
+            if (j < decodedLen) {
+                byte decodedByte2 = get2ndDecodedByte(encodedByte2, encodedByte3);
+                decodedBytes[j++] = decodedByte2;
             }
-            if ((decodedBytes.length - j) - paddingLen >= 0) {
-                decodedBytes[j++] = decoded3;
+            if (j < decodedLen) {
+                byte decodedByte3 = get3rdDecodedByte(encodedByte3, encodedByte4);
+                decodedBytes[j++] = decodedByte3;
             }
         }
-        
+
         return new String(decodedBytes);
+    }
+
+    private int getPaddingLen(char[] encodedBytes) {
+        int paddingLen = 0;
+        if (encodedBytes[encodedBytes.length - 2] == PADDING_CHAR) {
+            paddingLen = 2;
+        } else if (encodedBytes[encodedBytes.length - 1] == PADDING_CHAR) {
+            paddingLen = 1;
+        }
+        return paddingLen;
+    }
+
+    private byte get1stDecodedByte(byte encodedByte1, byte encodedByte2) {
+        return (byte) ((encodedByte1 << 2) | (encodedByte2 >> 4));
+    }
+
+    private byte get2ndDecodedByte(byte encodedByte2, byte encodedByte3) {
+        return (byte) ((encodedByte2 << 4) | (encodedByte3 >> 2));
+    }
+
+    private byte get3rdDecodedByte(byte encodedByte3, byte encodedByte4) {
+        return (byte) ((encodedByte3 << 6) | encodedByte4);
+    }
+
+    private byte lookupEncodedByte(char[] encodedBytes, int index) {
+        char encodedChar = encodedBytes[index];
+        return REVERSE_BASE_64_TABLE[encodedChar];
     }
 
     private byte get1stEncodedByte(byte b1) {
