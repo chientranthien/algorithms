@@ -1,6 +1,7 @@
 package com.chientt.base64.impl;
 
 import com.chientt.base64.Encoder;
+import java.util.Arrays;
 
 /**
  *
@@ -10,7 +11,9 @@ public class PaddingBase64 implements Encoder {
 
     static private final boolean DEBUG = true;
     static private final byte ZERO_BYTE = 0;
+    static private final byte PLACEHOLDER_BYTE = -1;
     static private final byte PADDING_INDEX = 64;
+    static private final byte PADDING_CHAR = '=';
 
     private static final char[] BASE_64_TABLE = {
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
@@ -19,6 +22,26 @@ public class PaddingBase64 implements Encoder {
         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/', '='
     };
+
+    //len =128 because the largest 
+    private static final byte[] REVERSE_BASE_64_TABLE = new byte[128];
+
+    static {
+        Arrays.fill(REVERSE_BASE_64_TABLE, PLACEHOLDER_BYTE);
+        byte count = 0;
+        for (int i = 'A'; i <= 'Z'; i++) {
+            REVERSE_BASE_64_TABLE[i] = count++;
+        }
+        for (int i = 'a'; i <= 'z'; i++) {
+            REVERSE_BASE_64_TABLE[i] = count++;
+        }
+        for (int i = '0'; i <= '9'; i++) {
+            REVERSE_BASE_64_TABLE[i] = count++;
+        }
+        REVERSE_BASE_64_TABLE['+'] = count++;
+        REVERSE_BASE_64_TABLE['/'] = count++;
+        REVERSE_BASE_64_TABLE['='] = count++;
+    }
 
     @Override
     public String encode(String str) {
@@ -60,8 +83,43 @@ public class PaddingBase64 implements Encoder {
 
     @Override
     public String decode(String str) {
-        return null;
+        if (DEBUG) {
+            System.out.println("str: " + str);
+        }
+        char[] encodedBytes = str.toCharArray();
+        int len = encodedBytes.length;
+        int paddingLen = 0;
+        if (encodedBytes[len - 2] == PADDING_CHAR) {
+            paddingLen = 2;
+        } else if (encodedBytes[len - 1] == PADDING_CHAR) {
+            paddingLen = 1;
+        }
+        int decodedLen = (len * 3 / 4) - paddingLen;
+        byte[] decodedBytes = new byte[decodedLen];
+        int j = 0;
+        for (int i = 0; i < len;) {
+            char c1 = encodedBytes[i++];
+            char c2 = encodedBytes[i++];
+            char c3 = encodedBytes[i++];
+            char c4 = encodedBytes[i++];
+            byte b1 = REVERSE_BASE_64_TABLE[c1];
+            byte b2 = REVERSE_BASE_64_TABLE[c2];
+            byte b3 = REVERSE_BASE_64_TABLE[c3];
+            byte b4 = REVERSE_BASE_64_TABLE[c4];
 
+            byte decoded1 = (byte) ((b1 << 2) | (b2 >> 4));
+            byte decoded2 = (byte) ((b2 << 4) | (b3 >> 2));
+            byte decoded3 = (byte) ((b3 << 6) | b4);
+            decodedBytes[j++] = decoded1;
+            if ((decodedBytes.length - j) - paddingLen >= 0) {
+                decodedBytes[j++] = decoded2;
+            }
+            if ((decodedBytes.length - j) - paddingLen >= 0) {
+                decodedBytes[j++] = decoded3;
+            }
+        }
+        
+        return new String(decodedBytes);
     }
 
     private byte get1stEncodedByte(byte b1) {
