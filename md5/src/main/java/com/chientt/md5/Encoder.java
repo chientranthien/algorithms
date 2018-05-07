@@ -6,8 +6,8 @@ package com.chientt.md5;
  */
 public interface Encoder {
 
-    String encode();
+    String encode(String input);
 
-    String decode();
+    String decode(String input);
 
 }
