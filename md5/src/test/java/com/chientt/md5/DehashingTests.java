@@ -1,4 +1,4 @@
-package com.chientt.base64;
+package com.chientt.md5;
 
 import com.chientt.md5.MD5Encoder;
 import java.util.Arrays;

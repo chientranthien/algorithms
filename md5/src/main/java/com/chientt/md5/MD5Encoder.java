@@ -24,7 +24,7 @@ public class MD5Encoder implements Hash {
         }
     }
     public static byte ZERO = 0x00;
-    public static byte FIRT_BIT_1 = 0x80;
+    public static byte FIRT_BIT_1 = (byte) 0x80;
 
     @Override
     public String hash(String input) {
@@ -46,9 +46,15 @@ public class MD5Encoder implements Hash {
 
         byte[] padding = new byte[paddingLen / 8];
         padding[0] = (byte) 0x80;
-        for (int i = 1; i < paddingLen - 16; i++) {
-            padding[i] =
+        for (int i = 1; i < paddingLen - 2; i++) {
+            padding[i] = 0;
         }
+        byte[] newArr = new byte[padding.length + bytes.length];
+
+        System.arraycopy(bytes, 0, newArr, 0, bytes.length);
+        System.arraycopy(padding, 0, newArr, bytes.length, padding.length);
+        
+
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
