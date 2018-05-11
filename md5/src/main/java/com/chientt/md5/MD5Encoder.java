@@ -34,8 +34,8 @@ public class MD5Encoder implements Hash {
         int d0 = 0x10325476; //D
 
         byte[] bytes = input.getBytes();
-        int bitLength = bytes.length * BIT_PER_BYTE;
-        int a = 512 - bitLength % 512;
+        int bitCount = bytes.length * BIT_PER_BYTE;
+        int a = 512 - bitCount % 512;
         int paddingLen;
         if (a >= 72) {
             paddingLen = a;
@@ -46,14 +46,19 @@ public class MD5Encoder implements Hash {
 
         byte[] padding = new byte[paddingLen / 8];
         padding[0] = (byte) 0x80;
-        for (int i = 1; i < paddingLen - 2; i++) {
+        for (int i = 1; i < paddingLen - 8; i++) {
             padding[i] = 0;
         }
+        byte[] bitCountAsBytes = convertLongToBytes(bitCount);
+        System.arraycopy(bitCountAsBytes, 0, padding, paddingLen - 8, 8);
         byte[] newArr = new byte[padding.length + bytes.length];
 
         System.arraycopy(bytes, 0, newArr, 0, bytes.length);
         System.arraycopy(padding, 0, newArr, bytes.length, padding.length);
-        
+
+        for (int i = 0; i < newArr.length; i += 64) {
+
+        }
 
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -61,6 +66,19 @@ public class MD5Encoder implements Hash {
     @Override
     public String dehash(String input) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private byte[] convertLongToBytes(long num) {
+        byte[] result = new byte[8];
+        result[0] = (byte) (num & 0xff);
+        result[1] = (byte) ((num >> 8) & 0xff);
+        result[2] = (byte) ((num >> 16) & 0xff);
+        result[3] = (byte) ((num >> 24) & 0xff);
+        result[4] = (byte) ((num >> 32) & 0xff);
+        result[5] = (byte) ((num >> 40) & 0xff);
+        result[6] = (byte) ((num >> 48) & 0xff);
+        result[7] = (byte) ((num >> 56) & 0xff);
+        return result;
     }
 
 }
