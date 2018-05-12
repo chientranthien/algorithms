@@ -1,7 +1,6 @@
 package com.chientt.md5;
 
 /**
- *
  * @author chientt
  */
 public class MD5Encoder implements Hash {
@@ -9,10 +8,10 @@ public class MD5Encoder implements Hash {
     public static final int BIT_PER_BYTE = 8;
 
     public static final int[] ALL_ROUND = new int[]{
-        7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
-        5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
-        4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
-        6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
+            7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+            5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+            4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+            6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
 
     public static final int[] K = new int[64];
 
@@ -20,9 +19,10 @@ public class MD5Encoder implements Hash {
         for (int i = 0; i < 64; i++) {
             K[i] = (int) Math.floor(
                     Math.pow(2, 32)
-                    * Math.abs(Math.sin(i + 1)));
+                            * Math.abs(Math.sin(i + 1)));
         }
     }
+
     public static byte ZERO = 0x00;
     public static byte FIRT_BIT_1 = (byte) 0x80;
 
@@ -57,10 +57,25 @@ public class MD5Encoder implements Hash {
         System.arraycopy(padding, 0, newArr, bytes.length, padding.length);
 
         for (int i = 0; i < newArr.length; i += 64) {
+            int A=a0;
+            int B=b0;
+            int C=c0;
+            int D=d0;
+            for (int j = 0; j < 64; j++) {
+                if (j < 16) {
+
+                } else if (j < 32) {
+
+                } else if (j < 48) {
+
+
+                } else if (j < 64) {
+
+                }
+            }
 
         }
-
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return null;
     }
 
     @Override
@@ -81,4 +96,19 @@ public class MD5Encoder implements Hash {
         return result;
     }
 
+    private int F(int B, int C, int D) {
+        return (B & C) | (~B & D);
+    }
+
+    private int G(int B, int C, int D) {
+        return (B & D) | (B & ~D);
+    }
+
+    private int H(int B, int C, int D) {
+        return B ^ C ^ D;
+    }
+
+    private int I(int B, int C, int D) {
+        return C ^ (B | ~D);
+    }
 }
