@@ -57,21 +57,32 @@ public class MD5Encoder implements Hash {
         System.arraycopy(padding, 0, newArr, bytes.length, padding.length);
 
         for (int i = 0; i < newArr.length; i += 64) {
-            int A=a0;
-            int B=b0;
-            int C=c0;
-            int D=d0;
+            int A = a0;
+            int B = b0;
+            int C = c0;
+            int D = d0;
+            int[] M = convertBytesToInts(newArr, i, 64);
             for (int j = 0; j < 64; j++) {
+                int F = 0, g = 0;
                 if (j < 16) {
-
+                    F = F(B, C, D);
+                    g = i;
                 } else if (j < 32) {
-
+                    F = G(B, C, D);
+                    g = (5 * i + 1) % 16;
                 } else if (j < 48) {
-
+                    F = H(B, C, D);
+                    g = (3 * i + 5) % 16;
 
                 } else if (j < 64) {
-
+                    F = I(B, C, D);
+                    g = (7 * i) % 16;
                 }
+                F += A + K[i] + M[g];
+                A=D;
+                D=C;
+                C=B;
+                
             }
 
         }
@@ -93,6 +104,22 @@ public class MD5Encoder implements Hash {
         result[5] = (byte) ((num >> 40) & 0xff);
         result[6] = (byte) ((num >> 48) & 0xff);
         result[7] = (byte) ((num >> 56) & 0xff);
+        return result;
+    }
+
+    private int[] convertBytesToInts(byte[] input, int offset, int size) {
+        if (size % 4 != 0) {
+            return null;
+        }
+        int toIndex = offset + size;
+        int[] result = new int[size / 4];
+        for (int i = offset, j = 0; i < toIndex; j++) {
+            int num = input[i++] << 24;
+            num &= input[i++] << 16;
+            num &= input[i++] << 8;
+            num &= input[i++];
+            result[i] = num;
+        }
         return result;
     }
 
