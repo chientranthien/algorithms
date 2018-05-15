@@ -42,23 +42,20 @@ public class MD5Encoder implements Hash {
         int d0 = 0x10325476; //D
 
         byte[] bytes = input.getBytes();
+        int len = bytes.length;
         int bitCount = bytes.length * BIT_PER_BYTE;
-        int a = 512 - bitCount % 512;
-        int paddingLen;
-        if (a >= 72) {
-            paddingLen = a;
-        } else {
-            paddingLen = a + 512;
+        int paddingLen = 64 - len % 64;
+        if (paddingLen <= 8) {
+            paddingLen += 64;
         }
 
-        int paddingAsByteLen = paddingLen / 8;
-        byte[] padding = new byte[paddingAsByteLen];
+        byte[] padding = new byte[paddingLen];
         padding[0] = (byte) 0x80;
-        for (int i = 1; i < paddingAsByteLen - 8; i++) {
+        for (int i = 1; i < paddingLen - 8; i++) {
             padding[i] = 0;
         }
         byte[] bitCountAsBytes = convertLongToBytes(bitCount);
-        System.arraycopy(bitCountAsBytes, 0, padding, paddingAsByteLen - 8, 8);
+        System.arraycopy(bitCountAsBytes, 0, padding, paddingLen - 8, 8);
         byte[] newArr = new byte[padding.length + bytes.length];
 
         System.arraycopy(bytes, 0, newArr, 0, bytes.length);
@@ -70,6 +67,7 @@ public class MD5Encoder implements Hash {
             int C = c0;
             int D = d0;
             int[] M = convertBytesToInts(newArr, i, 64);
+            int[] M2 = decode(newArr, 64,i );
             for (int j = 0; j < 64; j++) {
                 int F = 0, g = 0;
                 if (j < 16) {
@@ -128,20 +126,29 @@ public class MD5Encoder implements Hash {
         return result;
     }
 
-    private int[] convertBytesToInts(byte[] input, int offset, int size) {
+    public int[] convertBytesToInts(byte[] input, int offset, int size) {
         if (size % 4 != 0) {
             return null;
         }
         int toIndex = offset + size;
         int[] result = new int[size / 4];
         for (int i = offset, j = 0; i < toIndex; j++) {
-            int num = input[i++] << 24;
-            num &= input[i++] << 16;
-            num &= input[i++] << 8;
-            num &= input[i++];
+            int num = input[i++]& 0xff;
+            num |= (input[i++]& 0xff )<< 8;
+            num |= (input[i++]& 0xff  )<< 16;
+            num |= (input[i++] & 0xff )<< 24;
             result[j] = num;
         }
         return result;
+    }
+
+    public int[] decode(byte buffer[], int len, int offset) {
+        int[] decodeBuffer = new int[16];
+        int i, j;
+        for (i = j = 0; j < len; i++, j += 4) {
+            decodeBuffer[i] = ((buffer[j + offset] & 0xff)) | (((buffer[j + 1 + offset] & 0xff)) << 8) | (((buffer[j + 2 + offset] & 0xff)) << 16) | (((buffer[j + 3 + offset] & 0xff)) << 24);
+        }
+        return decodeBuffer;
     }
 
     private int F(int B, int C, int D) {
