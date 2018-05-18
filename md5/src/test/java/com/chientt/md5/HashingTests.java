@@ -1,6 +1,6 @@
 package com.chientt.md5;
 
-import com.chientt.md5.MD5Encoder;
+import com.chientt.md5.MD5Hasher;
 import java.util.Arrays;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -13,22 +13,22 @@ import com.chientt.md5.Hash;
  */
 public class HashingTests {
 
-    Hash encoder = new MD5Encoder();
+    Hash encoder = new MD5Hasher();
 
     @Test
     public void test1() {
-        List<String> expectations = Arrays.asList(
+        List<String> inputs  = Arrays.asList(
                 "MD5 processes",
                 "Message-Digest",
                 "Data Security");
-        List<String> inputs  = Arrays.asList(
+        List<String> expectations  = Arrays.asList(
                 "38b79b553ed9b565d8f80f293a0b92eb",
                 "703a404c0e706b05e970cc3b1d137cb7",
                 "6ebbd7e9d030b1cb13c27f56cba9376e");
 
         for (int i = 0; i < inputs.size(); i++) {
             String input = inputs.get(i);
-            String result = encoder.dehash(input);
+            String result = encoder.hash(input);
             String expectation = expectations.get(i);
             Assertions.assertThat(result).isEqualTo(expectation);
         }

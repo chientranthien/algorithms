@@ -3,7 +3,7 @@ package com.chientt.md5;
 /**
  * @author chientt
  */
-public class MD5Encoder implements Hash {
+public class MD5Hasher implements Hash {
 
     public static final int BIT_PER_BYTE = 8;
 
@@ -36,81 +36,102 @@ public class MD5Encoder implements Hash {
 
     @Override
     public String hash(String input) {
-        int a0 = 0x67452301; //A
-        int b0 = 0xefcdab89; //B
-        int c0 = 0x98badcfe; //C
-        int d0 = 0x10325476; //D
+        int[] state = new int[4];
+        state[0] = 0x67452301; //A
+        state[1] = 0xefcdab89; //B
+        state[2] = 0x98badcfe; //C
+        state[3] = 0x10325476; //D
 
         byte[] bytes = input.getBytes();
-        int len = bytes.length;
-        int bitCount = bytes.length * BIT_PER_BYTE;
+        byte[] padding = generatePadding(bytes.length);
+
+        byte[] newArr = new byte[padding.length + bytes.length];
+        System.arraycopy(bytes, 0, newArr, 0, bytes.length);
+        System.arraycopy(padding, 0, newArr, bytes.length, padding.length);
+
+        for (int i = 0; i < newArr.length; i += 64) {
+            int A = state[0];
+            int B = state[1];
+            int C = state[2];
+            int D = state[3];
+            int[] M = convertBytesToInts(newArr, i, 64);
+            for (int j = 0; j < 64; j++) {
+                int F = 0, g = 0;
+                if (j < 16) {
+                    F = F(B, C, D);
+                    g = j;
+                } else if (j < 32) {
+                    F = G(B, C, D);
+                    g = (5 * j + 1) % 16;
+                } else if (j < 48) {
+                    F = H(B, C, D);
+                    g = (3 * j + 5) % 16;
+                } else if (j < 64) {
+                    F = I(B, C, D);
+                    g = (7 * j) % 16;
+                }
+                F += A + K[j] + M[g];
+                A = D;
+                D = C;
+                C = B;
+                B += leftrotate(F, s[j]);
+
+            }
+            state[0] += A;
+            state[1] += B;
+            state[2] += C;
+            state[3] += D;
+        }
+
+        return toHex(encode(state, 16));
+    }
+
+    byte[] generatePadding(int len) {
         int paddingLen = 64 - len % 64;
         if (paddingLen <= 8) {
             paddingLen += 64;
         }
 
         byte[] padding = new byte[paddingLen];
-        padding[0] = (byte) 0x80;
+        padding[0] = FIRT_BIT_1;
         for (int i = 1; i < paddingLen - 8; i++) {
-            padding[i] = 0;
+            padding[i] = ZERO;
         }
+
+        int bitCount = len * BIT_PER_BYTE;
         byte[] bitCountAsBytes = convertLongToBytes(bitCount);
-        System.arraycopy(bitCountAsBytes, 0, padding, paddingLen - 8, 8);
-        byte[] newArr = new byte[padding.length + bytes.length];
+        System.arraycopy(bitCountAsBytes, 0, padding, padding.length - 8, 8);
+        return padding;
+    }
 
-        System.arraycopy(bytes, 0, newArr, 0, bytes.length);
-        System.arraycopy(padding, 0, newArr, bytes.length, padding.length);
-
-        for (int i = 0; i < newArr.length; i += 64) {
-            int A = a0;
-            int B = b0;
-            int C = c0;
-            int D = d0;
-            int[] M = convertBytesToInts(newArr, i, 64);
-            int[] M2 = decode(newArr, 64,i );
-            for (int j = 0; j < 64; j++) {
-                int F = 0, g = 0;
-                if (j < 16) {
-                    F = F(B, C, D);
-                    g = i;
-                } else if (j < 32) {
-                    F = G(B, C, D);
-                    g = (5 * i + 1) % 16;
-                } else if (j < 48) {
-                    F = H(B, C, D);
-                    g = (3 * i + 5) % 16;
-
-                } else if (j < 64) {
-                    F = I(B, C, D);
-                    g = (7 * i) % 16;
-                }
-                F += A + K[i] + M[g];
-                A = D;
-                D = C;
-                C = B;
-                B += leftrotate(F, s[i]);
-
+    private static String toHex(byte hash[]) {
+        StringBuffer buf = new StringBuffer(hash.length * 2);
+        for (byte element : hash) {
+            int intVal = element & 0xff;
+            if (intVal < 0x10) {
+                // append a zero before a one digit hex
+                // number to make it two digits.
+                buf.append("0");
             }
-            a0 += a0 + A;
-            b0 += b0 + B;
-            c0 += c0 + C;
-            d0 += d0 + D;
+            buf.append(Integer.toHexString(intVal));
         }
+        return buf.toString();
+    }
 
-        System.out.println("a0 " + Integer.toHexString(a0));
-        System.out.println("b0 " + Integer.toHexString(b0));
-        System.out.println("c0 " + Integer.toHexString(c0));
-        System.out.println("d0 " + Integer.toHexString(d0));
-        return null;
+    private static byte[] encode(int input[], int len) {
+        byte[] out = new byte[len];
+        int i, j;
+        for (i = j = 0; j < len; i++, j += 4) {
+            out[j] = (byte) (input[i] & 0xff);
+            out[j + 1] = (byte) ((input[i] >>> 8) & 0xff);
+            out[j + 2] = (byte) ((input[i] >>> 16) & 0xff);
+            out[j + 3] = (byte) ((input[i] >>> 24) & 0xff);
+        }
+        return out;
     }
 
     private int leftrotate(int x, int c) {
-        return (x << c) | (x >> (32 - c));
-    }
-
-    @Override
-    public String dehash(String input) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return (x << c) | (x >>> (32 - c));
     }
 
     private byte[] convertLongToBytes(long num) {
@@ -133,10 +154,10 @@ public class MD5Encoder implements Hash {
         int toIndex = offset + size;
         int[] result = new int[size / 4];
         for (int i = offset, j = 0; i < toIndex; j++) {
-            int num = input[i++]& 0xff;
-            num |= (input[i++]& 0xff )<< 8;
-            num |= (input[i++]& 0xff  )<< 16;
-            num |= (input[i++] & 0xff )<< 24;
+            int num = input[i++] & 0xff;
+            num |= (input[i++] & 0xff) << 8;
+            num |= (input[i++] & 0xff) << 16;
+            num |= (input[i++] & 0xff) << 24;
             result[j] = num;
         }
         return result;
@@ -156,7 +177,7 @@ public class MD5Encoder implements Hash {
     }
 
     private int G(int B, int C, int D) {
-        return (B & D) | (B & ~D);
+        return (B & D) | (C & ~D);
     }
 
     private int H(int B, int C, int D) {

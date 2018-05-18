@@ -8,6 +8,5 @@ public interface Hash {
 
     String hash(String input);
 
-    String dehash(String input);
 
 }
