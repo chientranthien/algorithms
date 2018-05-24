@@ -26,3 +26,4 @@ hs_err_pid*
 base64/src/test/java/com/chientt/base64/MyTest.java
 /base64 (copy)/target/
 /md5/target/
+/quick_sort/target/
