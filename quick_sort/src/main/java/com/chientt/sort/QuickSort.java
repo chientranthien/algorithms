@@ -19,16 +19,27 @@ public class QuickSort<T> implements ArraySort<T> {
             int head,
             int tail,
             Comparator<T> comparator) {
-        pivot(input, head, tail, comparator);
-        if (tail <= head) {
+        for (T t : input) {
+            System.out.print(" "+t);
+        }
+        System.out.println();
+
+        if (tail <= head || head<0 || tail<0) {
             return;
         }
-        int med = (head + tail) / 2;
-        quickSort(input, head, med, comparator);
-        quickSort(input, med + 1, tail, comparator);
+        int pivotIndex=   pivot(input, head, tail, comparator);
+        System.out.println("head: "+head+" tail: "+tail+" pivot: "+pivotIndex) ;
+//        System.out.println("###################");
+//        for (T t : input) {
+//            System.out.print(" "+t);
+//        }
+        System.out.println();
+        quickSort(input, head, pivotIndex-1, comparator);
+        quickSort(input, pivotIndex+1 , tail, comparator);
+
     }
 
-    public void pivot(T[] input, int index1, int index2, Comparator<T> comparator) {
+    public int  pivot(T[] input, int index1, int index2, Comparator<T> comparator) {
         int pivotIndex = index2;
         T pivotVal = input[pivotIndex];
         int i = pivotIndex;
@@ -40,10 +51,11 @@ public class QuickSort<T> implements ArraySort<T> {
                     input[j] = input[j + 1];
                 }
                 input[pivotIndex] = tmp;
-                pivotIndex--;
+                pivotIndex-- ;
             }
             i--;
         }
+        return pivotIndex;
     }
 
 }
