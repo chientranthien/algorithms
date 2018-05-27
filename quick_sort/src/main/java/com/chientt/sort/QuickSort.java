@@ -3,7 +3,6 @@ package com.chientt.sort;
 import java.util.Arrays;
 
 /**
- *
  * @author chientt
  */
 public class QuickSort<T> implements ArraySort<T> {
@@ -16,34 +15,23 @@ public class QuickSort<T> implements ArraySort<T> {
     }
 
     private void quickSort(T[] input,
-            int head,
-            int tail,
-            Comparator<T> comparator) {
-        for (T t : input) {
-            System.out.print(" "+t);
-        }
-        System.out.println();
-
-        if (tail <= head || head<0 || tail<0) {
+                           int low,
+                           int high,
+                           Comparator<T> comparator) {
+        if (low >= high ) {
             return;
         }
-        int pivotIndex=   pivot(input, head, tail, comparator);
-        System.out.println("head: "+head+" tail: "+tail+" pivot: "+pivotIndex) ;
-//        System.out.println("###################");
-//        for (T t : input) {
-//            System.out.print(" "+t);
-//        }
-        System.out.println();
-        quickSort(input, head, pivotIndex-1, comparator);
-        quickSort(input, pivotIndex+1 , tail, comparator);
+        int pivotIndex = partition(input, low, high, comparator);
+        quickSort(input, low, pivotIndex - 1, comparator);
+        quickSort(input, pivotIndex + 1, high, comparator);
 
     }
 
-    public int  pivot(T[] input, int index1, int index2, Comparator<T> comparator) {
-        int pivotIndex = index2;
+    public int partition(T[] input, int low, int high, Comparator<T> comparator) {
+        int pivotIndex = high;
         T pivotVal = input[pivotIndex];
-        int i = pivotIndex;
-        while (i >= index1) {
+        int i = pivotIndex - 1;
+        while (i >= low) {
 
             if (comparator.compare(pivotVal, input[i])) {
                 T tmp = input[i];
@@ -51,7 +39,7 @@ public class QuickSort<T> implements ArraySort<T> {
                     input[j] = input[j + 1];
                 }
                 input[pivotIndex] = tmp;
-                pivotIndex-- ;
+                pivotIndex--;
             }
             i--;
         }
