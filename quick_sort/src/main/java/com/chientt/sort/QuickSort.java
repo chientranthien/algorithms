@@ -27,7 +27,7 @@ public class QuickSort<T> implements ArraySort<T> {
 
     }
 
-    public int partition(T[] input, int low, int high, Comparator<T> comparator) {
+    private  int partition(T[] input, int low, int high, Comparator<T> comparator) {
         int pivotIndex = high;
         T pivotVal = input[pivotIndex];
         int i = pivotIndex - 1;
